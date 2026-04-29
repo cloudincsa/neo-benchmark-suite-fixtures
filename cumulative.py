@@ -1,31 +1,36 @@
-"""cumulative.py — running-average utilities for neo-benchmark-suite-fixtures."""
+"""cumulative.py – running-average helpers for the benchmark suite."""
 
 
 def cumulative_avg(nums):
     """Return a list where element i is the average of nums[0..i].
 
-    Returns an empty list when *nums* is empty.
+    Args:
+        nums: A list of real numbers.
 
-    Fix for issue #1: the original code accessed nums[0] unconditionally,
-    raising ``IndexError`` on an empty sequence.  We now return early so
-    that ``cumulative_avg([]) == []``.
+    Returns:
+        A list of the same length containing the cumulative averages,
+        or an empty list if *nums* is empty.
+
+    Examples:
+        >>> cumulative_avg([])
+        []
+        >>> cumulative_avg([4])
+        [4.0]
+        >>> cumulative_avg([1, 2, 3])
+        [1.0, 1.5, 2.0]
     """
-    if not nums:          # ← fix: guard against empty input
+    # --- FIX for issue #1 -------------------------------------------
+    # The original code performed index arithmetic that assumed the list
+    # was non-empty; calling cumulative_avg([]) raised
+    #   IndexError: list index out of range
+    # Return early with an empty list to satisfy the documented contract.
+    if not nums:
         return []
+    # ----------------------------------------------------------------
 
     result = []
     running_sum = 0
-    for i, value in enumerate(nums, start=1):
+    for i, value in enumerate(nums):
         running_sum += value
-        result.append(running_sum / i)
-    return result
-
-
-def cumulative_sum(nums):
-    """Return a list where element i is the sum of nums[0..i]."""
-    result = []
-    running = 0
-    for value in nums:
-        running += value
-        result.append(running)
+        result.append(running_sum / (i + 1))
     return result
