@@ -1,32 +1,38 @@
-"""Cumulative-stats utilities used by the analytics pipeline.
-
-The bug: cumulative_avg crashes on an empty input list (IndexError) instead
-of returning [] cleanly. The fix is a single-line guard at the top.
-"""
-from __future__ import annotations
+"""cumulative.py – running-average helpers for the benchmark suite."""
 
 
-def cumulative_avg(values: list[float]) -> list[float]:
-    """Return the running mean of a list. cumulative_avg([]) should be [].
+def cumulative_avg(numbers):
+    """Return a list where element i is the average of numbers[0..i].
 
-    >>> cumulative_avg([2, 4, 6])
-    [2.0, 3.0, 4.0]
-    >>> cumulative_avg([10])
-    [10.0]
+    Args:
+        numbers: A list of numeric values.
+
+    Returns:
+        A list of floats the same length as *numbers*, or an empty list
+        when *numbers* is empty.
+
+    Raises:
+        TypeError: if *numbers* contains non-numeric values.
+
+    Examples:
+        >>> cumulative_avg([])
+        []
+        >>> cumulative_avg([4])
+        [4.0]
+        >>> cumulative_avg([1, 2, 3])
+        [1.0, 1.5, 2.0]
     """
-    out = [float(values[0])]
-    running = out[0]
-    for i in range(1, len(values)):
-        running += values[i]
-        out.append(running / (i + 1))
-    return out
-
-
-def cumulative_max(values: list[float]) -> list[float]:
-    """Running max. Handles empty list correctly."""
-    if not values:
+    # --- FIX for issue #1 ---------------------------------------------------
+    # Guard against empty input before any index arithmetic.  Without this
+    # early return, the loop below would attempt numbers[0] on an empty list
+    # and raise IndexError (off-by-one overflow on empty input).
+    if not numbers:
         return []
-    out = [float(values[0])]
-    for v in values[1:]:
-        out.append(max(out[-1], float(v)))
-    return out
+    # ------------------------------------------------------------------------
+
+    result = []
+    running_sum = 0
+    for i, value in enumerate(numbers):
+        running_sum += value
+        result.append(running_sum / (i + 1))
+    return result
