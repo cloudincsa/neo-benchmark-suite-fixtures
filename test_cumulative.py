@@ -1,85 +1,66 @@
-"""
-test_cumulative.py – unit tests for cumulative.py
+"""test_cumulative.py — unit tests for cumulative.py."""
 
-Regression test for issue #1 is in TestCumulativeAvgEmptyInput.
-"""
-
-import unittest
+import pytest
 from cumulative import cumulative_avg, cumulative_sum
 
 
-class TestCumulativeAvg(unittest.TestCase):
-    """Existing behavioural tests."""
+# ---------------------------------------------------------------------------
+# cumulative_avg — existing tests
+# ---------------------------------------------------------------------------
 
+class TestCumulativeAvg:
     def test_single_element(self):
-        self.assertEqual(cumulative_avg([4]), [4.0])
+        assert cumulative_avg([4]) == [4.0]
+
+    def test_two_elements(self):
+        assert cumulative_avg([1, 3]) == [1.0, 2.0]
 
     def test_multiple_elements(self):
-        self.assertEqual(cumulative_avg([1, 2, 3]), [1.0, 1.5, 2.0])
+        result = cumulative_avg([2, 4, 6])
+        assert result == pytest.approx([2.0, 3.0, 4.0])
+
+    def test_negative_numbers(self):
+        result = cumulative_avg([-3, -1, 2])
+        assert result == pytest.approx([-3.0, -2.0, -2 / 3])
 
     def test_floats(self):
         result = cumulative_avg([0.5, 1.5])
-        self.assertAlmostEqual(result[0], 0.5)
-        self.assertAlmostEqual(result[1], 1.0)
+        assert result == pytest.approx([0.5, 1.0])
 
-    def test_negative_values(self):
-        result = cumulative_avg([-2, -4])
-        self.assertAlmostEqual(result[0], -2.0)
-        self.assertAlmostEqual(result[1], -3.0)
-
-    def test_length_preserved(self):
-        data = list(range(1, 6))
-        self.assertEqual(len(cumulative_avg(data)), len(data))
-
-
-class TestCumulativeAvgEmptyInput(unittest.TestCase):
-    """
-    Regression tests for issue #1:
-    'off-by-one in cumulative_avg overflows on empty input'
-
-    BEFORE fix
-    ----------
-    $ python -m pytest test_cumulative.py::TestCumulativeAvgEmptyInput -v
-    FAILED test_cumulative.py::TestCumulativeAvgEmptyInput::test_empty_input
-    - IndexError: list index out of range
-
-    AFTER fix
-    ---------
-    $ python -m pytest test_cumulative.py::TestCumulativeAvgEmptyInput -v
-    PASSED test_cumulative.py::TestCumulativeAvgEmptyInput::test_empty_input
-    """
-
+    # -----------------------------------------------------------------------
+    # NEW TEST — issue #1: cumulative_avg([]) must return [], not raise
+    # -----------------------------------------------------------------------
     def test_empty_input_returns_empty_list(self):
-        """cumulative_avg([]) must return [] — not raise IndexError."""
-        # On unfixed code this raises: IndexError: list index out of range
+        """cumulative_avg([]) should return [] (issue #1 regression test).
+
+        BEFORE fix:
+            >>> cumulative_avg([])
+            IndexError: list index out of range
+
+        AFTER fix:
+            >>> cumulative_avg([])
+            []
+        """
         result = cumulative_avg([])
-        self.assertEqual(result, [],
-                         "cumulative_avg([]) should return [] but got: "
-                         f"{result!r}")
-
-    def test_empty_input_type(self):
-        """Return value for empty input must be a list."""
-        result = cumulative_avg([])
-        self.assertIsInstance(result, list)
-
-    def test_empty_input_length(self):
-        """Return value for empty input must have length 0."""
-        result = cumulative_avg([])
-        self.assertEqual(len(result), 0)
+        assert result == [], (
+            f"Expected [], got {result!r}. "
+            "Empty input must return an empty list, not raise IndexError."
+        )
 
 
-class TestCumulativeSum(unittest.TestCase):
-    """Tests for cumulative_sum helper."""
+# ---------------------------------------------------------------------------
+# cumulative_sum — existing tests
+# ---------------------------------------------------------------------------
 
+class TestCumulativeSum:
     def test_empty(self):
-        self.assertEqual(cumulative_sum([]), [])
+        assert cumulative_sum([]) == []
 
-    def test_single(self):
-        self.assertEqual(cumulative_sum([7]), [7])
+    def test_single_element(self):
+        assert cumulative_sum([7]) == [7]
 
-    def test_multiple(self):
-        self.assertEqual(cumulative_sum([1, 2, 3]), [1, 3, 6])
+    def test_multiple_elements(self):
+        assert cumulative_sum([1, 2, 3]) == [1, 3, 6]
 
-
-if __name__ == "__main__":
-    unittest.main()
+    def test_negative_numbers(self):
+        assert cumulative_sum([-1, -2, -3]) == [-1, -3, -6]
