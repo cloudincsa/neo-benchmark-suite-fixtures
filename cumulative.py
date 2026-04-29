@@ -1,61 +1,31 @@
-"""
-cumulative.py – running/cumulative average utilities.
-
-Fix (issue #1): cumulative_avg([]) now returns [] instead of raising
-IndexError caused by an off-by-one that read nums[0] unconditionally
-before checking whether the list was non-empty.
-"""
+"""cumulative.py — running-average utilities for neo-benchmark-suite-fixtures."""
 
 
 def cumulative_avg(nums):
     """Return a list where element i is the average of nums[0..i].
 
-    Args:
-        nums: A list of numeric values.
+    Returns an empty list when *nums* is empty.
 
-    Returns:
-        A list of floats the same length as *nums*, or [] if *nums* is empty.
-
-    Raises:
-        TypeError: if *nums* contains non-numeric values.
-
-    Examples:
-        >>> cumulative_avg([])
-        []
-        >>> cumulative_avg([4])
-        [4.0]
-        >>> cumulative_avg([1, 2, 3])
-        [1.0, 1.5, 2.0]
+    Fix for issue #1: the original code accessed nums[0] unconditionally,
+    raising ``IndexError`` on an empty sequence.  We now return early so
+    that ``cumulative_avg([]) == []``.
     """
-    # --- FIX for issue #1 -------------------------------------------
-    # Guard against empty input BEFORE any element access so that the
-    # off-by-one (reading nums[0] unconditionally) can never fire.
-    if not nums:
+    if not nums:          # ← fix: guard against empty input
         return []
-    # ----------------------------------------------------------------
 
     result = []
     running_sum = 0
-    for i, val in enumerate(nums):
-        running_sum += val
-        result.append(running_sum / (i + 1))
+    for i, value in enumerate(nums, start=1):
+        running_sum += value
+        result.append(running_sum / i)
     return result
 
 
 def cumulative_sum(nums):
-    """Return a list where element i is the sum of nums[0..i].
-
-    Args:
-        nums: A list of numeric values.
-
-    Returns:
-        A list the same length as *nums*, or [] if *nums* is empty.
-    """
-    if not nums:
-        return []
+    """Return a list where element i is the sum of nums[0..i]."""
     result = []
     running = 0
-    for val in nums:
-        running += val
+    for value in nums:
+        running += value
         result.append(running)
     return result
